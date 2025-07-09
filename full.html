@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>algoChan - Мини-Форум</title>
+  <style>
+    :root {
+      --background-color: #ffffff;
+      --text-color: #3a006e;
+      --border-color: #9a6cff;
+      --button-bg-color: #7f6cff;
+      --button-text-color: white;
+    }
+
+    .dark-theme {
+      --background-color: #222;
+      --text-color: #fff;
+      --border-color: #bb86fc;
+      --button-bg-color: #bb86fc;
+      --button-text-color: #000;
+    }
+
+    body {
+      background: var(--background-color);
+      color: var(--text-color);
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 0 15px;
+      font-size: 16px;
+    }
+
+    h1, h2, h3 {
+      font-weight: 600;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 8px;
+      margin-bottom: 20px;
+    }
+
+    button {
+      background: var(--button-bg-color);
+      color: var(--button-text-color);
+      border: 2px solid var(--border-color);
+      padding: 7px 14px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 15px;
+      border-radius: 5px;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    button:hover {
+      background: var(--border-color);
+      color: var(--button-text-color);
+    }
+
+    input, textarea, select {
+      border: 2px solid var(--border-color);
+      background: #f8f6ff;
+      color: var(--text-color);
+      font-family: inherit;
+      font-size: 15px;
+      padding: 8px 10px;
+      margin-bottom: 15px;
+      width: 100%;
+      box-sizing: border-box;
+      border-radius: 6px;
+      transition: border-color 0.3s ease;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--border-color);
+      outline: none;
+      background: #f0eaff;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    li {
+      border-bottom: 1.5px solid var(--border-color);
+      padding: 10px 8px;
+      cursor: pointer;
+      list-style: none;
+      transition: background-color 0.2s ease;
+    }
+
+    li:hover {
+      background-color: #f0eaff;
+    }
+
+    .comment {
+      border-top: 1.5px solid var(--border-color);
+      padding: 10px 8px;
+      margin-top: 10px;
+      border-radius: 6px;
+      background: #faf8ff;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    #reactions-container button {
+      border: 2px solid var(--border-color);
+      background: #f8f6ff;
+      margin: 4px;
+      padding: 5px 9px;
+      cursor: pointer;
+      border-radius: 5px;
+      font-size: 18px;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    #reactions-container button.selected {
+      background: var(--button-bg-color);
+      color: white;
+      border-color: var(--border-color);
+    }
+
+    #private-message-section {
+      margin-top: 40px;
+      border-top: 2px solid var(--border-color);
+      padding-top: 20px;
+    }
+
+    #user-info {
+      margin-bottom: 15px;
+      font-weight: 600;
+    }
+
+    #btn-back {
+      margin-bottom: 20px;
+      background: #c7bfff;
+      color: var(--text-color);
+      border-color: #c7bfff;
+    }
+
+    #btn-back:hover {
+      background: var(--border-color);
+      color: white;
+    }
+
+    .comments, #private-message-section {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .profile {
+      margin-top: 20px;
+      padding: 15px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      background: #faf8ff;
+    }
+
+    .profile img {
+      max-width: 100px;
+      max-height: 100px;
+      border-radius: 50%;
+    }
+
+    #search-section {
+      margin-bottom: 20px;
+    }
+
+    #theme-section {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>algoChan Мини-Форум</h1>
+  <div id="user-info"></div>
+</header>
+<!-- Авторизация -->
+<div id="auth-section">
+  <input type="email" id="email" placeholder="Email" autocomplete="username" />
+  <input type="password" id="password" placeholder="Пароль" autocomplete="current-password" />
+  <button id="btn-register">Зарегистрироваться</button>
+  <button id="btn-login">Войти</button>
+  <button id="btn-google">Войти через Google</button>
+  <button id="btn-anon">Войти анонимно</button>
+  <button id="btn-logout" class="hidden">Выйти</button>
+</div>
+<!-- Поиск -->
+<div id="search-section" class="hidden">
+  <input type="text" id="search-input" placeholder="Поиск по форуму" />
+  <button id="search-button">Поиск</button>
+</div>
+<!-- Темы оформления -->
+<div id="theme-section" class="hidden">
+  <h3>Выберите тему оформления</h3>
+  <select id="theme-select">
+    <option value="light">Светлая</option>
+    <option value="dark">Темная</option>
+  </select>
+  <button id="set-theme">Применить тему</button>
+</div>
+<!-- Профиль пользователя -->
+<div id="profile-section" class="hidden">
+  <button id="btn-back-to-forum">← Назад к форуму</button>
+  <div class="profile">
+    <h2 id="profile-nickname"></h2>
+    <img id="profile-avatar" src="" alt="Аватар" />
+    <p><b>ID:</b> <span id="profile-id"></span></p>
+    <p><b>Репутация:</b> <span id="profile-reputation">0</span></p>
+    <p><b>Биография:</b> <span id="profile-bio"></span></p>
+    <h3>Награды</h3>
+    <ul id="profile-awards"></ul>
+  </div>
+</div>
+<!-- Список тем и создание темы -->
+<div id="forum-section" class="hidden">
+  <h2>Темы</h2>
+  <ul id="topics-list"></ul>
+  <div id="topic-create">
+    <h3>Создать тему</h3>
+    <input type="text" id="topic-title" placeholder="Заголовок" />
+    <select id="topic-category">
+      <option>Общее</option>
+      <option>Проекты</option>
+      <option>Реклама</option>
+      <option>Анархия</option>
+    </select>
+    <input type="text" id="topic-tags" placeholder="#тег1 #тег2" />
+    <textarea id="topic-content" placeholder="Описание темы"></textarea>
+    <input type="file" id="upload-image" accept="image/*" />
+    <button id="btn-create-topic">Опубликовать</button>
+  </div>
+</div>
+<!-- Просмотр темы -->
+<div id="topic-view" class="hidden">
+  <button id="btn-back">← Назад</button>
+  <h2 id="view-title"></h2>
+  <p id="view-content"></p>
+  <div><b>Категория:</b> <span id="view-category"></span></div>
+  <div><b>Теги:</b> <span id="view-tags"></span></div>
+  <div style="margin-top:10px;">
+    <button id="btn-like" class="vote-btn" title="Нравится">👍</button><span id="like-count">0</span>
+    <button id="btn-dislike" class="vote-btn" title="Не нравится">👎</button><span id="dislike-count">0</span>
+  </div>
+  <div id="reactions-container" style="margin-top:15px;">
+    <span>Реакции:</span>
+    <button data-reaction="😁" title="Улыбка">😁</button>
+    <button data-reaction="😎" title="Круто">😎</button>
+    <button data-reaction="🥵" title="Жарко">🥵</button>
+    <button data-reaction="🥶" title="Холодно">🥶</button>
+    <button data-reaction="😱" title="Ужас">😱</button>
+    <button data-reaction="👽" title="Инопланетянин">👽</button>
+    <button data-reaction="☠️" title="Смерть">☠️</button>
+    <button data-reaction="🤡" title="Клоун">🤡</button>
+    <button data-reaction="😍" title="Влюблен">😍</button>
+    <button data-reaction="🤑" title="Жадный">🤑</button>
+    <button data-reaction="❤️" title="Любовь">❤️</button>
+  </div>
+  <div class="comments">
+    <h3>Комментарии</h3>
+    <ul id="comments-list"></ul>
+    <div id="login-to-comment" class="hidden" style="color:#7f6cff;">Войдите, чтобы комментировать</div>
+    <div id="comment-form" class="hidden">
+      <textarea id="comment-text" placeholder="Ваш комментарий"></textarea>
+      <button id="btn-send-comment">Отправить</button>
+    </div>
+  </div>
+</div>
+<!-- Личные сообщения -->
+<div id="private-message-section" class="hidden">
+  <h2>Личные сообщения</h2>
+  <div>
+    <label for="pm-recipient">Получатель (ID или email):</label>
+    <input type="text" id="pm-recipient" placeholder="ID или email получателя" />
+    <textarea id="pm-text" placeholder="Текст сообщения"></textarea>
+    <button id="btn-send-pm">Отправить ЛС</button>
+  </div>
+  <h3>Входящие сообщения</h3>
+  <ul id="pm-list"></ul>
+</div>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import {
+    getAuth, onAuthStateChanged,
+    createUserWithEmailAndPassword, signInWithEmailAndPassword,
+    GoogleAuthProvider, signInWithPopup, signOut,
+    signInAnonymously
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import {
+    getDatabase, ref, push, set, onValue, off, update, increment, get, runTransaction
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  import {
+    getStorage, ref as storageRef, uploadBytes, getDownloadURL
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+  // Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyBjWwCTsgWogsKq1s6Xwo7GGf4dycw-Hxo",
+    authDomain: "algodata-26fe6.firebaseapp.com",
+    databaseURL: "https://algodata-26fe6-default-rtdb.firebaseio.com",
+    projectId: "algodata-26fe6",
+    storageBucket: "algodata-26fe6.appspot.com",
+    messagingSenderId: "727358128981",
+    appId: "1:727358128981:web:8eac1885ec167b1686e5dc",
+    measurementId: "G-EXY8WDLX7N"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getDatabase(app);
+  const storage = getStorage(app);
+
+  // Elements
+  const emailInput = document.getElementById('email');
+  const passwordInput = document.getElementById('password');
+  const btnRegister = document.getElementById('btn-register');
+  const btnLogin = document.getElementById('btn-login');
+  const btnGoogle = document.getElementById('btn-google');
+  const btnAnon = document.getElementById('btn-anon');
+  const btnLogout = document.getElementById('btn-logout');
+  const userInfo = document.getElementById('user-info');
+  const authSection = document.getElementById('auth-section');
+  const forumSection = document.getElementById('forum-section');
+  const topicsList = document.getElementById('topics-list');
+  const topicCreate = document.getElementById('topic-create');
+  const topicTitle = document.getElementById('topic-title');
+  const topicContent = document.getElementById('topic-content');
+  const topicCategory = document.getElementById('topic-category');
+  const topicTags = document.getElementById('topic-tags');
+  const btnCreateTopic = document.getElementById('btn-create-topic');
+  const topicView = document.getElementById('topic-view');
+  const btnBack = document.getElementById('btn-back');
+  const viewTitle = document.getElementById('view-title');
+  const viewContent = document.getElementById('view-content');
+  const viewCategory = document.getElementById('view-category');
+  const viewTags = document.getElementById('view-tags');
+  const btnLike = document.getElementById('btn-like');
+  const btnDislike = document.getElementById('btn-dislike');
+  const likeCountSpan = document.getElementById('like-count');
+  const dislikeCountSpan = document.getElementById('dislike-count');
+  const reactionsContainer = document.getElementById('reactions-container');
+  const commentsList = document.getElementById('comments-list');
+  const loginToComment = document.getElementById('login-to-comment');
+  const commentForm = document.getElementById('comment-form');
+  const commentText = document.getElementById('comment-text');
+  const btnSendComment = document.getElementById('btn-send-comment');
+  const pmSection = document.getElementById('private-message-section');
+  const pmRecipient = document.getElementById('pm-recipient');
+  const pmText = document.getElementById('pm-text');
+  const btnSendPm = document.getElementById('btn-send-pm');
+  const pmList = document.getElementById('pm-list');
+  const profileSection = document.getElementById('profile-section');
+  const profileNickname = document.getElementById('profile-nickname');
+  const profileAvatar = document.getElementById('profile-avatar');
+  const profileId = document.getElementById('profile-id');
+  const profileBio = document.getElementById('profile-bio');
+  const profileAwards = document.getElementById('profile-awards');
+  const profileReputation = document.getElementById('profile-reputation');
+  const btnBackToForum = document.getElementById('btn-back-to-forum');
+  const searchInput = document.getElementById('search-input');
+  const searchButton = document.getElementById('search-button');
+  const themeSelect = document.getElementById('theme-select');
+  const setThemeButton = document.getElementById('set-theme');
+  const uploadImageInput = document.getElementById('upload-image');
+  const searchSection = document.getElementById('search-section');
+  const themeSection = document.getElementById('theme-section');
+
+  let currentUser = null;
+  let currentTopicId = null;
+  let currentUserIsAnonymous = true;
+
+  // ============ AUTH ===============
+  btnRegister.onclick = async () => {
+    const email = emailInput.value.trim();
+    const pass = passwordInput.value;
+    if (!email || !pass) {
+      alert('Введите email и пароль');
+      return;
+    }
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+      console.log('Регистрация прошла успешно', userCredential);
+    } catch (error) {
+      console.error('Ошибка регистрации:', error);
+      alert('Ошибка регистрации: ' + error.message);
+    }
+  };
+
+  btnLogin.onclick = async () => {
+    const email = emailInput.value.trim();
+    const pass = passwordInput.value;
+    if (!email || !pass) {
+      alert('Введите email и пароль');
+      return;
+    }
+    try {
+      await signInWithEmailAndPassword(auth, email, pass);
+    } catch (error) {
+      console.error('Ошибка входа:', error);
+      alert('Ошибка входа: ' + error.message);
+    }
+  };
+
+  btnGoogle.onclick = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+    } catch (error) {
+      console.error('Ошибка входа через Google:', error);
+      alert('Ошибка входа через Google: ' + error.message);
+    }
+  };
+
+  btnAnon.onclick = async () => {
+    try {
+      await signInAnonymously(auth);
+    } catch (error) {
+      console.error('Ошибка анонимного входа:', error);
+      alert('Ошибка анонимного входа: ' + error.message);
+    }
+  };
+
+  btnLogout.onclick = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error('Ошибка выхода:', error);
+      alert('Ошибка выхода: ' + error.message);
+    }
+  };
+
+  // Отобразить пользователя и переключить интерфейс
+  function showUser(user) {
+    if (!user) {
+      userInfo.textContent = "Вы не вошли в систему";
+      authSection.classList.remove("hidden");
+      forumSection.classList.add("hidden");
+      topicView.classList.add("hidden");
+      pmSection.classList.add("hidden");
+      profileSection.classList.add("hidden");
+      btnLogout.classList.add("hidden");
+      topicCreate.style.display = "none";
+      loginToComment.classList.add("hidden");
+      commentForm.classList.add("hidden");
+      searchSection.classList.add("hidden");
+      themeSection.classList.add("hidden");
+      return;
+    }
+    currentUser = user;
+    currentUserIsAnonymous = user.isAnonymous;
+    userInfo.textContent = `Пользователь: ${user.isAnonymous ? "Аноним" : (user.email || "Без email")}`;
+    authSection.classList.add("hidden");
+    forumSection.classList.remove("hidden");
+    btnLogout.classList.remove("hidden");
+    topicCreate.style.display = "block";
+    pmSection.classList.remove("hidden");
+    searchSection.classList.remove("hidden");
+    themeSection.classList.remove("hidden");
+
+    if (!user.isAnonymous) {
+      loadUserProfile(user.uid);
+    }
+  }
+
+  onAuthStateChanged(auth, user => {
+    showUser(user);
+    if (user) {
+      loadTopics();
+      loadPrivateMessages();
+    }
+  });
+
+  // Загрузка профиля пользователя
+  async function loadUserProfile(userId) {
+    const userRef = ref(db, "users/" + userId);
+    try {
+      const snapshot = await get(userRef);
+      if (snapshot.exists()) {
+        const userData = snapshot.val();
+        if (userData.avatar) profileAvatar.src = userData.avatar;
+        if (userData.nickname) profileNickname.textContent = userData.nickname;
+        if (userData.bio) profileBio.textContent = userData.bio;
+        if (userData.reputation) profileReputation.textContent = userData.reputation;
+        profileId.textContent = userId;
+        if (userData.awards) {
+          profileAwards.innerHTML = userData.awards.map(award => `<li>${award}</li>`).join('');
+        }
+        if (userData.theme) applyTheme(userData.theme);
+      }
+    } catch (error) {
+      console.error('Ошибка загрузки профиля:', error);
+    }
+  }
+
+  // Применение темы
+  function applyTheme(theme) {
+    if (theme === 'dark') {
+      document.body.classList.add('dark-theme');
+    } else {
+      document.body.classList.remove('dark-theme');
+    }
+  }
+
+  // =========== TOPICS ==================
+  // Загрузка списка тем
+  function loadTopics() {
+    const topicsRef = ref(db, "topics");
+    onValue(topicsRef, (snapshot) => {
+      const data = snapshot.val() || {};
+      topicsList.innerHTML = "";
+      for (const [id, topic] of Object.entries(data)) {
+        const li = document.createElement('li');
+        li.textContent = topic.title + " [" + topic.category + "]";
+        li.dataset.id = id;
+        topicsList.appendChild(li);
+      }
+    });
+  }
+
+  // Создание темы
+  btnCreateTopic.onclick = async () => {
+    if (!currentUser) {
+      alert("Войдите, чтобы создавать темы.");
+      return;
+    }
+    const title = topicTitle.value.trim();
+    const content = topicContent.value.trim();
+    const category = topicCategory.value;
+    const tagsRaw = topicTags.value.trim();
+    if (!title || !content) {
+      alert("Заполните заголовок и описание темы.");
+      return;
+    }
+    const tags = tagsRaw.split(/\s+/).filter(t => t.startsWith("#")).map(t => t.substring(1));
+    const newTopicRef = push(ref(db, "topics"));
+    try {
+      await set(newTopicRef, {
+        title, content, category, tags,
+        author: currentUser.uid,
+        createdAt: Date.now(),
+        likes: 0,
+        dislikes: 0,
+        reactions: {},
+      });
+      await addReputation(currentUser.uid, 10);
+      topicTitle.value = "";
+      topicContent.value = "";
+      topicTags.value = "";
+    } catch (error) {
+      console.error('Ошибка создания темы:', error);
+      alert('Ошибка создания темы: ' + error.message);
+    }
+  };
+
+  // Открыть тему
+  topicsList.onclick = (e) => {
+    if (e.target.tagName !== "LI") return;
+    const topicId = e.target.dataset.id;
+    openTopic(topicId);
+  };
+
+  // Загрузить и показать тему
+  async function openTopic(topicId) {
+    const topicRef = ref(db, "topics/" + topicId);
+    try {
+      const snapshot = await get(topicRef);
+      if (!snapshot.exists()) {
+        alert("Тема не найдена");
+        return;
+      }
+      const topic = snapshot.val();
+      currentTopicId = topicId;
+      viewTitle.textContent = topic.title;
+      viewContent.textContent = topic.content;
+      viewCategory.textContent = topic.category;
+      viewTags.textContent = topic.tags ? topic.tags.map(t => "#" + t).join(" ") : "";
+      likeCountSpan.textContent = topic.likes || 0;
+      dislikeCountSpan.textContent = topic.dislikes || 0;
+      forumSection.classList.add("hidden");
+      topicView.classList.remove("hidden");
+      pmSection.classList.add("hidden");
+      loadComments(topicId);
+      updateReactionsUI(topic.reactions || {});
+      updateVoteButtons(topic.likes || 0, topic.dislikes || 0);
+      updateCommentSectionVisibility();
+    } catch (error) {
+      console.error('Ошибка открытия темы:', error);
+    }
+  }
+
+  // Назад к списку тем
+  btnBack.onclick = () => {
+    currentTopicId = null;
+    topicView.classList.add("hidden");
+    forumSection.classList.remove("hidden");
+    pmSection.classList.remove("hidden");
+    commentsList.innerHTML = "";
+  };
+
+  // Лайки и дизлайки
+  btnLike.onclick = () => {
+    if (!currentUser) {
+      alert("Войдите, чтобы голосовать");
+      return;
+    }
+    vote(currentTopicId, currentUser.uid, true);
+  };
+
+  btnDislike.onclick = () => {
+    if (!currentUser) {
+      alert("Войдите, чтобы голосовать");
+      return;
+    }
+    vote(currentTopicId, currentUser.uid, false);
+  };
+
+  async function vote(topicId, userId, isLike) {
+    const topicRef = ref(db, "topics/" + topicId);
+    const userVoteRef = ref(db, `topicVotes/${topicId}/${userId}`);
+    try {
+      const voteSnap = await get(userVoteRef);
+      const oldVote = voteSnap.exists() ? voteSnap.val() : null;
+      if (oldVote === (isLike ? "like" : "dislike")) {
+        await runTransaction(topicRef, (topic) => {
+          if (!topic) return topic;
+          if (isLike) topic.likes = (topic.likes || 0) - 1;
+          else topic.dislikes = (topic.dislikes || 0) - 1;
+          return topic;
+        });
+        await set(userVoteRef, null);
+      } else {
+        await runTransaction(topicRef, (topic) => {
+          if (!topic) return topic;
+          if (oldVote === "like") topic.likes = (topic.likes || 0) - 1;
+          if (oldVote === "dislike") topic.dislikes = (topic.dislikes || 0) - 1;
+          if (isLike) topic.likes = (topic.likes || 0) + 1;
+          else topic.dislikes = (topic.dislikes || 0) + 1;
+          return topic;
+        });
+        await set(userVoteRef, isLike ? "like" : "dislike");
+      }
+      const topicSnap = await get(topicRef);
+      const topic = topicSnap.val();
+      likeCountSpan.textContent = topic.likes || 0;
+      dislikeCountSpan.textContent = topic.dislikes || 0;
+      updateVoteButtons(topic.likes || 0, topic.dislikes || 0);
+    } catch (error) {
+      console.error('Ошибка голосования:', error);
+    }
+  }
+
+  // Обновить кнопку лайков/дизлайков (подсветка)
+  async function updateVoteButtons(likes, dislikes) {
+    if (!currentUser) {
+      btnLike.classList.remove("selected");
+      btnDislike.classList.remove("selected");
+      return;
+    }
+    const userVoteRef = ref(db, `topicVotes/${currentTopicId}/${currentUser.uid}`);
+    try {
+      const voteSnap = await get(userVoteRef);
+      const userVote = voteSnap.exists() ? voteSnap.val() : null;
+      btnLike.classList.toggle("selected", userVote === "like");
+      btnDislike.classList.toggle("selected", userVote === "dislike");
+    } catch (error) {
+      console.error('Ошибка обновления кнопок голосования:', error);
+    }
+  }
+
+  // Реакции
+  reactionsContainer.onclick = async (e) => {
+    if (e.target.tagName !== "BUTTON") return;
+    if (!currentUser) {
+      alert("Войдите, чтобы ставить реакции");
+      return;
+    }
+    const reaction = e.target.dataset.reaction;
+    if (!reaction) return;
+    const reactionRef = ref(db, `topics/${currentTopicId}/reactions/${currentUser.uid}`);
+    try {
+      const snap = await get(reactionRef);
+      const currentReaction = snap.exists() ? snap.val() : null;
+      if (currentReaction === reaction) {
+        await set(reactionRef, null);
+        e.target.classList.remove("selected");
+      } else {
+        await set(reactionRef, reaction);
+        const buttons = reactionsContainer.querySelectorAll("button");
+        buttons.forEach(btn => btn.classList.toggle("selected", btn.dataset.reaction === reaction));
+      }
+    } catch (error) {
+      console.error('Ошибка установки реакции:', error);
+    }
+  };
+
+  // Обновить UI реакций по данным из Firebase
+  async function updateReactionsUI(reactions) {
+    const userReaction = currentUser ? reactions[currentUser.uid] : null;
+    const buttons = reactionsContainer.querySelectorAll("button");
+    buttons.forEach(btn => {
+      btn.classList.toggle("selected", btn.dataset.reaction === userReaction);
+    });
+  }
+
+  // =========== COMMENTS =================
+  function loadComments(topicId) {
+    const commentsRef = ref(db, "comments/" + topicId);
+    off(commentsRef);
+    onValue(commentsRef, (snapshot) => {
+      const data = snapshot.val() || {};
+      commentsList.innerHTML = "";
+      for (const [id, comment] of Object.entries(data)) {
+        const li = document.createElement('li');
+        li.className = "comment";
+        const author = comment.author || "Гость";
+        const date = new Date(comment.createdAt || 0).toLocaleString();
+        li.innerHTML = `<b><span class="comment-author" data-id="${comment.authorId}">${author}</span></b> <small style="color:#7f6cff;">${date}</small><br>${comment.text}`;
+        commentsList.appendChild(li);
+      }
+      document.querySelectorAll('.comment-author').forEach(author => {
+        author.onclick = () => {
+          const userId = author.dataset.id;
+          viewUserProfile(userId);
+        };
+      });
+    });
+  }
+
+  // Просмотр профиля пользователя
+  async function viewUserProfile(userId) {
+    const userRef = ref(db, "users/" + userId);
+    try {
+      const snapshot = await get(userRef);
+      if (snapshot.exists()) {
+        const userData = snapshot.val();
+        profileNickname.textContent = userData.nickname || "Без имени";
+        profileId.textContent = userId;
+        profileBio.textContent = userData.bio || "Нет биографии";
+        profileReputation.textContent = userData.reputation || "0";
+        profileAvatar.src = userData.avatar || "";
+        if (userData.awards) {
+          profileAwards.innerHTML = userData.awards.map(award => `<li>${award}</li>`).join('');
+        } else {
+          profileAwards.innerHTML = "<li>Нет наград</li>";
+        }
+        forumSection.classList.add("hidden");
+        topicView.classList.add("hidden");
+        pmSection.classList.add("hidden");
+        profileSection.classList.remove("hidden");
+      } else {
+        alert("Профиль пользователя не найден");
+      }
+    } catch (error) {
+      console.error('Ошибка просмотра профиля:', error);
+    }
+  }
+
+  // Назад к форуму из профиля
+  btnBackToForum.onclick = () => {
+    profileSection.classList.add("hidden");
+    forumSection.classList.remove("hidden");
+  };
+
+  // Отправка комментария
+  btnSendComment.onclick = async () => {
+    if (!currentUser) {
+      alert("Войдите, чтобы комментировать.");
+      return;
+    }
+    const text = commentText.value.trim();
+    if (!text) {
+      alert("Введите текст комментария");
+      return;
+    }
+    const newCommentRef = push(ref(db, "comments/" + currentTopicId));
+    try {
+      await set(newCommentRef, {
+        text,
+        author: currentUser.email || "Аноним",
+        authorId: currentUser.uid,
+        createdAt: Date.now(),
+      });
+      await addReputation(currentUser.uid, 5);
+      commentText.value = "";
+    } catch (error) {
+      console.error('Ошибка отправки комментария:', error);
+    }
+  };
+
+  // Показать или скрыть форму комментирования
+  function updateCommentSectionVisibility() {
+    if (currentUser && !currentUserIsAnonymous) {
+      loginToComment.classList.add("hidden");
+      commentForm.classList.remove("hidden");
+    } else {
+      loginToComment.classList.remove("hidden");
+      commentForm.classList.add("hidden");
+    }
+  }
+
+  // =========== PRIVATE MESSAGES ================
+  btnSendPm.onclick = async () => {
+    if (!currentUser) {
+      alert("Войдите, чтобы отправлять ЛС");
+      return;
+    }
+    const recipient = pmRecipient.value.trim();
+    const text = pmText.value.trim();
+    if (!recipient || !text) {
+      alert("Введите ID или email получателя и текст сообщения");
+      return;
+    }
+    let recipientId = recipient;
+    if (recipient.includes('@')) {
+      const usersRef = ref(db, "users");
+      try {
+        const snapshot = await get(usersRef);
+        const users = snapshot.val() || {};
+        const user = Object.entries(users).find(([id, userData]) => userData.email === recipient);
+        if (user) {
+          recipientId = user[0];
+        } else {
+          alert("Пользователь с таким email не найден");
+          return;
+        }
+      } catch (error) {
+        console.error('Ошибка поиска пользователя:', error);
+        return;
+      }
+    }
+    const newPmRef = push(ref(db, "privateMessages"));
+    try {
+      await set(newPmRef, {
+        from: currentUser.uid,
+        to: recipientId,
+        text,
+        createdAt: Date.now(),
+      });
+      pmRecipient.value = "";
+      pmText.value = "";
+      alert("Сообщение отправлено");
+      loadPrivateMessages();
+    } catch (error) {
+      console.error('Ошибка отправки ЛС:', error);
+    }
+  };
+
+  // Загрузка входящих личных сообщений для текущего пользователя
+  function loadPrivateMessages() {
+    if (!currentUser || currentUserIsAnonymous) {
+      pmList.innerHTML = "<li>Войдите с почтой, чтобы видеть личные сообщения.</li>";
+      return;
+    }
+    const pmRef = ref(db, "privateMessages");
+    onValue(pmRef, (snapshot) => {
+      const data = snapshot.val() || {};
+      pmList.innerHTML = "";
+      for (const [id, msg] of Object.entries(data)) {
+        if (msg.to === currentUser.uid) {
+          const li = document.createElement('li');
+          const date = new Date(msg.createdAt || 0).toLocaleString();
+          li.innerHTML = `<b>От: ${msg.from}</b> <small style="color:#7f6cff;">${date}</small><br>${msg.text}`;
+          pmList.appendChild(li);
+        }
+      }
+      if (pmList.children.length === 0) {
+        pmList.innerHTML = "<li>Нет новых сообщений</li>";
+      }
+    });
+  }
+
+  // =========== REPUTATION SYSTEM ================
+  async function addReputation(userId, points) {
+    const userRef = ref(db, `users/${userId}/reputation`);
+    try {
+      await runTransaction(userRef, (currentPoints) => {
+        return (currentPoints || 0) + points;
+      });
+    } catch (error) {
+      console.error('Ошибка добавления репутации:', error);
+    }
+  }
+
+  // =========== SEARCH ================
+  searchButton.onclick = async () => {
+    const keyword = searchInput.value.trim();
+    if (!keyword) {
+      alert("Введите ключевое слово для поиска.");
+      return;
+    }
+    try {
+      const results = await searchTopics(keyword);
+      topicsList.innerHTML = results.map(topic =>
+        `<li data-id="${topic.id}">${topic.title} [${topic.category}]</li>`
+      ).join('');
+    } catch (error) {
+      console.error('Ошибка поиска:', error);
+    }
+  };
+
+  async function searchTopics(keyword) {
+    const topicsRef = ref(db, "topics");
+    try {
+      const snapshot = await get(topicsRef);
+      const topics = snapshot.val() || {};
+      return Object.entries(topics).filter(([id, topic]) =>
+        topic.title.includes(keyword) || topic.content.includes(keyword)
+      ).map(([id, topic]) => ({ id, ...topic }));
+    } catch (error) {
+      console.error('Ошибка поиска тем:', error);
+      return [];
+    }
+  }
+
+  // =========== THEMES ================
+  setThemeButton.onclick = async () => {
+    const theme = themeSelect.value;
+    try {
+      await setUserTheme(currentUser.uid, theme);
+      alert(`Тема оформления установлена: ${theme}`);
+    } catch (error) {
+      console.error('Ошибка установки темы:', error);
+    }
+  };
+
+  async function setUserTheme(userId, theme) {
+    const userRef = ref(db, `users/${userId}/theme`);
+    try {
+      await set(userRef, theme);
+      applyTheme(theme);
+    } catch (error) {
+      console.error('Ошибка сохранения темы:', error);
+    }
+  }
+
+  // =========== IMAGE UPLOAD ================
+  uploadImageInput.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      const imageUrl = await uploadImage(file);
+      topicContent.value += `\n![Image](${imageUrl})`;
+    } catch (error) {
+      console.error('Ошибка загрузки изображения:', error);
+    }
+  };
+
+  async function uploadImage(file) {
+    const storageRef = storageRef(storage, `images/${file.name}`);
+    try {
+      await uploadBytes(storageRef, file);
+      return await getDownloadURL(storageRef);
+    } catch (error) {
+      console.error('Ошибка загрузки файла:', error);
+      throw error;
+    }
+  }
+</script>
+</body>
+</html>
