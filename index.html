@@ -190,21 +190,20 @@
   </div>
   <div id="user-info"></div>
 </header>
+
 <!-- Авторизация -->
 <div id="auth-section">
-  <input type="email" id="email" placeholder="Email" autocomplete="username" />
-  <input type="password" id="password" placeholder="Пароль" autocomplete="current-password" />
-  <button id="btn-register">Зарегистрироваться</button>
-  <button id="btn-login">Войти</button>
   <button id="btn-google">Войти через Google</button>
   <button id="btn-anon">Войти анонимно</button>
   <button id="btn-logout" class="hidden">Выйти</button>
 </div>
+
 <!-- Поиск -->
 <div id="search-section" class="hidden">
   <input type="text" id="search-input" placeholder="Поиск по форуму" />
   <button id="search-button">Поиск</button>
 </div>
+
 <!-- Темы оформления -->
 <div id="theme-section" class="hidden">
   <h3>Выберите тему оформления</h3>
@@ -214,6 +213,7 @@
   </select>
   <button id="set-theme">Применить тему</button>
 </div>
+
 <!-- Профиль пользователя -->
 <div id="profile-section" class="hidden">
   <button id="btn-back-to-forum">← Назад к форуму</button>
@@ -226,8 +226,16 @@
     <p><b>ID:</b> <span id="profile-id"></span></p>
     <p><b>Репутация:</b> <span id="profile-reputation">0</span></p>
     <p><b>О себе:</b> <span id="profile-bio"></span></p>
+    <p><b>Статус бана:</b> <span id="profile-ban-status">Не забанен</span></p>
     <h3>Награды</h3>
     <div class="badges" id="profile-awards"></div>
+    <div id="report-section">
+      <button id="btn-report-user">Пожаловаться на пользователя</button>
+      <div id="report-form" class="hidden">
+        <textarea id="report-text" placeholder="Причина жалобы"></textarea>
+        <button id="btn-send-report">Отправить жалобу</button>
+      </div>
+    </div>
     <div id="edit-profile-section" class="hidden">
       <h3>Редактировать профиль</h3>
       <input type="text" id="edit-nickname" placeholder="Никнейм" />
@@ -238,9 +246,9 @@
       <button id="btn-save-profile">Сохранить</button>
     </div>
     <button id="btn-edit-profile">Редактировать профиль</button>
-    <button id="btn-report-user">Пожаловаться</button>
   </div>
 </div>
+
 <!-- Список тем и создание темы -->
 <div id="forum-section" class="hidden">
   <h2>Темы</h2>
@@ -264,6 +272,7 @@
     <ul id="trends-list"></ul>
   </div>
 </div>
+
 <!-- Просмотр темы -->
 <div id="topic-view" class="hidden">
   <button id="btn-back">← Назад</button>
@@ -299,6 +308,7 @@
     </div>
   </div>
 </div>
+
 <!-- Личные сообщения -->
 <div id="private-message-section" class="hidden">
   <h2>Личные сообщения</h2>
@@ -311,11 +321,11 @@
   <h3>Входящие сообщения</h3>
   <ul id="pm-list"></ul>
 </div>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import {
     getAuth, onAuthStateChanged,
-    createUserWithEmailAndPassword, signInWithEmailAndPassword,
     GoogleAuthProvider, signInWithPopup, signOut,
     signInAnonymously
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
@@ -325,6 +335,7 @@
   import {
     getStorage, ref as storageRef, uploadBytes, getDownloadURL
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
   const firebaseConfig = {
     apiKey: "AIzaSyBjWwCTsgWogsKq1s6Xwo7GGf4dycw-Hxo",
     authDomain: "algodata-26fe6.firebaseapp.com",
@@ -335,14 +346,12 @@
     appId: "1:727358128981:web:8eac1885ec167b1686e5dc",
     measurementId: "G-EXY8WDLX7N"
   };
+
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getDatabase(app);
   const storage = getStorage(app);
-  const emailInput = document.getElementById('email');
-  const passwordInput = document.getElementById('password');
-  const btnRegister = document.getElementById('btn-register');
-  const btnLogin = document.getElementById('btn-login');
+
   const btnGoogle = document.getElementById('btn-google');
   const btnAnon = document.getElementById('btn-anon');
   const btnLogout = document.getElementById('btn-logout');
@@ -406,47 +415,47 @@
   const btnEditProfile = document.getElementById('btn-edit-profile');
   const btnSaveProfile = document.getElementById('btn-save-profile');
   const btnReportUser = document.getElementById('btn-report-user');
+  const reportForm = document.getElementById('report-form');
+  const reportText = document.getElementById('report-text');
+  const btnSendReport = document.getElementById('btn-send-report');
+  const profileBanStatus = document.getElementById('profile-ban-status');
+
   let currentUser = null;
   let currentTopicId = null;
   let currentUserIsAnonymous = true;
-  btnRegister.onclick = async () => {
-    const email = emailInput.value.trim();
-    const pass = passwordInput.value;
-    if (!email || !pass) {
-      alert('Введите email и пароль');
-      return;
-    }
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-      console.log('Регистрация прошла успешно', userCredential);
-    } catch (error) {
-      console.error('Ошибка регистрации:', error);
-      alert('Ошибка регистрации: ' + error.message);
-    }
-  };
-  btnLogin.onclick = async () => {
-    const email = emailInput.value.trim();
-    const pass = passwordInput.value;
-    if (!email || !pass) {
-      alert('Введите email и пароль');
-      return;
-    }
-    try {
-      await signInWithEmailAndPassword(auth, email, pass);
-    } catch (error) {
-      console.error('Ошибка входа:', error);
-      alert('Ошибка входа: ' + error.message);
-    }
-  };
+  let currentProfileUserId = null;
+
+  // Вход через Google
   btnGoogle.onclick = async () => {
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      // Проверка уникальности email
+      const usersRef = ref(db, "users");
+      const snapshot = await get(usersRef);
+      const users = snapshot.val() || {};
+      const emailExists = Object.values(users).some(u => u.email === user.email && u.uid !== user.uid);
+      if (emailExists) {
+        await signOut(auth);
+        alert("Этот email уже зарегистрирован.");
+        return;
+      }
+      // Сохранение данных пользователя
+      await set(ref(db, `users/${user.uid}`), {
+        email: user.email,
+        nickname: user.displayName || "Без имени",
+        avatar: user.photoURL || "",
+        reputation: 0,
+        createdAt: Date.now()
+      });
     } catch (error) {
       console.error('Ошибка входа через Google:', error);
       alert('Ошибка входа через Google: ' + error.message);
     }
   };
+
+  // Анонимный вход
   btnAnon.onclick = async () => {
     try {
       await signInAnonymously(auth);
@@ -455,6 +464,8 @@
       alert('Ошибка анонимного входа: ' + error.message);
     }
   };
+
+  // Выход
   btnLogout.onclick = async () => {
     try {
       await signOut(auth);
@@ -463,6 +474,8 @@
       alert('Ошибка выхода: ' + error.message);
     }
   };
+
+  // Переход к профилю
   btnProfile.onclick = () => {
     if (currentUser) {
       viewUserProfile(currentUser.uid);
@@ -470,10 +483,13 @@
       alert("Войдите, чтобы просмотреть профиль.");
     }
   };
+
   btnExitProfile.onclick = () => {
     profileSection.classList.add("hidden");
     forumSection.classList.remove("hidden");
   };
+
+  // Отображение состояния пользователя
   function showUser(user) {
     if (!user) {
       userInfo.textContent = "Вы не вошли в систему";
@@ -498,7 +514,7 @@
     forumSection.classList.remove("hidden");
     btnLogout.classList.remove("hidden");
     btnProfile.classList.remove("hidden");
-    topicCreate.style.display = "block";
+    topicCreate.style.display = currentUserIsAnonymous ? "none" : "block";
     pmSection.classList.remove("hidden");
     searchSection.classList.remove("hidden");
     themeSection.classList.remove("hidden");
@@ -506,16 +522,39 @@
       loadUserProfile(user.uid);
     }
   }
-  onAuthStateChanged(auth, user => {
+
+  onAuthStateChanged(auth, async user => {
     showUser(user);
     if (user) {
       loadTopics();
       loadPrivateMessages();
       loadTrends();
+      // Проверка статуса бана
+      if (!user.isAnonymous) {
+        const banStatus = await checkBanStatus(user.uid);
+        if (banStatus.isBanned) {
+          userInfo.textContent += ` (Забанен до ${new Date(banStatus.banUntil).toLocaleString()})`;
+          topicCreate.style.display = "none";
+        }
+      }
     }
   });
+
+  // Проверка статуса бана
+  async function checkBanStatus(userId) {
+    const userRef = ref(db, `users/${userId}`);
+    const snapshot = await get(userRef);
+    const userData = snapshot.val() || {};
+    const now = Date.now();
+    if (userData.banUntil && userData.banUntil > now) {
+      return { isBanned: true, banUntil: userData.banUntil };
+    }
+    return { isBanned: false };
+  }
+
+  // Загрузка профиля
   async function loadUserProfile(userId) {
-    const userRef = ref(db, "users/" + userId);
+    const userRef = ref(db, `users/${userId}`);
     try {
       const snapshot = await get(userRef);
       if (snapshot.exists()) {
@@ -530,12 +569,17 @@
         if (userData.awards) {
           profileAwards.innerHTML = userData.awards.map(award => `<img src="${award}" alt="Badge" title="Badge">`).join('');
         }
-        if (userData.theme) applyTheme(userData.theme);
+        profileBanStatus.textContent = userData.banUntil && userData.banUntil > Date.now()
+          ? `Забанен до ${new Date(userData.banUntil).toLocaleString()}`
+          : "Не забанен";
+        applyTheme(userData.theme);
       }
     } catch (error) {
       console.error('Ошибка загрузки профиля:', error);
     }
   }
+
+  // Применение темы
   function applyTheme(theme) {
     if (theme === 'dark') {
       document.body.classList.add('dark-theme');
@@ -543,6 +587,8 @@
       document.body.classList.remove('dark-theme');
     }
   }
+
+  // Загрузка тем
   function loadTopics() {
     const topicsRef = ref(db, "topics");
     onValue(topicsRef, (snapshot) => {
@@ -556,9 +602,46 @@
       }
     });
   }
+
+  // Проверка лимита тем (3 в неделю)
+  async function checkTopicLimit(userId) {
+    const weekStart = getWeekStart();
+    const topicCountRef = ref(db, `userTopicCounts/${userId}/${weekStart}`);
+    const snapshot = await get(topicCountRef);
+    const count = snapshot.exists() ? snapshot.val() : 0;
+    return count < 3;
+  }
+
+  // Получение начала текущей недели
+  function getWeekStart() {
+    const now = new Date();
+    const dayOfWeek = now.getDay();
+    const diff = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+    const weekStart = new Date(now.setDate(diff));
+    weekStart.setHours(0, 0, 0, 0);
+    return weekStart.getTime();
+  }
+
+  // Создание темы
   btnCreateTopic.onclick = async () => {
     if (!currentUser) {
       alert("Войдите, чтобы создавать темы.");
+      return;
+    }
+    if (currentUserIsAnonymous) {
+      alert("Анонимные пользователи не могут создавать темы.");
+      return;
+    }
+    // Проверка статуса бана
+    const banStatus = await checkBanStatus(currentUser.uid);
+    if (banStatus.isBanned) {
+      alert(`Вы забанены до ${new Date(banStatus.banUntil).toLocaleString()}. Создание тем запрещено.`);
+      return;
+    }
+    // Проверка лимита тем
+    const canCreateTopic = await checkTopicLimit(currentUser.uid);
+    if (!canCreateTopic) {
+      alert("Вы достигли лимита в 3 темы на эту неделю.");
       return;
     }
     const title = topicTitle.value.trim();
@@ -570,48 +653,36 @@
       return;
     }
     const tags = tagsRaw.split(/\s+/).filter(t => t.startsWith("#")).map(t => t.substring(1));
-
-    // Получаем текущую дату в формате YYYY-MM-DD
-    const todayDate = new Date().toISOString().split('T')[0];
-
-    const userTopicRef = ref(db, `users/${currentUser.uid}/topicCount/${todayDate}`);
-
+    const newTopicRef = push(ref(db, "topics"));
     try {
-        // Получаем текущее количество тем, созданных сегодня
-        const snapshot = await get(userTopicRef);
-        const currentCount = snapshot.exists() ? snapshot.val().count : 0;
-
-        if (currentCount >= 3) {
-            alert("Вы достигли лимита в 3 темы за день.");
-            return;
-        }
-
-        // Увеличиваем счетчик тем на сегодня
-        await set(userTopicRef, { count: currentCount + 1 });
-
-        const newTopicRef = push(ref(db, "topics"));
-        await set(newTopicRef, {
-            title, content, category, tags,
-            author: currentUser.uid,
-            createdAt: Date.now(),
-            likes: 0,
-            dislikes: 0,
-            reactions: {},
-        });
-        await addReputation(currentUser.uid, 10);
-        topicTitle.value = "";
-        topicContent.value = "";
-        topicTags.value = "";
+      await set(newTopicRef, {
+        title, content, category, tags,
+        author: currentUser.uid,
+        createdAt: Date.now(),
+        likes: 0,
+        dislikes: 0,
+        reactions: {},
+      });
+      // Увеличение счетчика тем
+      const weekStart = getWeekStart();
+      const topicCountRef = ref(db, `userTopicCounts/${currentUser.uid}/${weekStart}`);
+      await runTransaction(topicCountRef, count => (count || 0) + 1);
+      await addReputation(currentUser.uid, 10);
+      topicTitle.value = "";
+      topicContent.value = "";
+      topicTags.value = "";
     } catch (error) {
-        console.error('Ошибка создания темы:', error);
-        alert('Ошибка создания темы: ' + error.message);
+      console.error('Ошибка создания темы:', error);
+      alert('Ошибка создания темы: ' + error.message);
     }
   };
+
   topicsList.onclick = (e) => {
     if (e.target.tagName !== "LI") return;
     const topicId = e.target.dataset.id;
     openTopic(topicId);
   };
+
   async function openTopic(topicId) {
     const topicRef = ref(db, "topics/" + topicId);
     try {
@@ -639,6 +710,7 @@
       console.error('Ошибка открытия темы:', error);
     }
   }
+
   btnBack.onclick = () => {
     currentTopicId = null;
     topicView.classList.add("hidden");
@@ -646,6 +718,7 @@
     pmSection.classList.remove("hidden");
     commentsList.innerHTML = "";
   };
+
   btnLike.onclick = () => {
     if (!currentUser) {
       alert("Войдите, чтобы голосовать");
@@ -653,6 +726,7 @@
     }
     vote(currentTopicId, currentUser.uid, true);
   };
+
   btnDislike.onclick = () => {
     if (!currentUser) {
       alert("Войдите, чтобы голосовать");
@@ -660,6 +734,7 @@
     }
     vote(currentTopicId, currentUser.uid, false);
   };
+
   async function vote(topicId, userId, isLike) {
     const topicRef = ref(db, "topics/" + topicId);
     const userVoteRef = ref(db, `topicVotes/${topicId}/${userId}`);
@@ -694,6 +769,7 @@
       console.error('Ошибка голосования:', error);
     }
   }
+
   async function updateVoteButtons(likes, dislikes) {
     if (!currentUser) {
       btnLike.classList.remove("selected");
@@ -710,6 +786,7 @@
       console.error('Ошибка обновления кнопок голосования:', error);
     }
   }
+
   reactionsContainer.onclick = async (e) => {
     if (e.target.tagName !== "BUTTON") return;
     if (!currentUser) {
@@ -734,6 +811,7 @@
       console.error('Ошибка установки реакции:', error);
     }
   };
+
   async function updateReactionsUI(reactions) {
     const userReaction = currentUser ? reactions[currentUser.uid] : null;
     const buttons = reactionsContainer.querySelectorAll("button");
@@ -741,6 +819,7 @@
       btn.classList.toggle("selected", btn.dataset.reaction === userReaction);
     });
   }
+
   function loadComments(topicId) {
     const commentsRef = ref(db, "comments/" + topicId);
     off(commentsRef);
@@ -763,7 +842,9 @@
       });
     });
   }
+
   async function viewUserProfile(userId) {
+    currentProfileUserId = userId;
     const userRef = ref(db, "users/" + userId);
     try {
       const snapshot = await get(userRef);
@@ -781,10 +862,14 @@
         } else {
           profileAwards.innerHTML = "<p>Нет наград</p>";
         }
+        profileBanStatus.textContent = userData.banUntil && userData.banUntil > Date.now()
+          ? `Забанен до ${new Date(userData.banUntil).toLocaleString()}`
+          : "Не забанен";
         forumSection.classList.add("hidden");
         topicView.classList.add("hidden");
         pmSection.classList.add("hidden");
         profileSection.classList.remove("hidden");
+        reportSection.classList.toggle("hidden", currentUser && userId === currentUser.uid);
       } else {
         alert("Профиль пользователя не найден");
       }
@@ -792,36 +877,46 @@
       console.error('Ошибка просмотра профиля:', error);
     }
   }
+
   btnBackToForum.onclick = () => {
     profileSection.classList.add("hidden");
     forumSection.classList.remove("hidden");
   };
+
   btnEditProfile.onclick = () => {
     editProfileSection.classList.toggle("hidden");
   };
+
   btnSaveProfile.onclick = async () => {
     const nickname = editNickname.value.trim();
     const status = editStatus.value.trim();
     const bio = editBio.value.trim();
     const avatarFile = editAvatar.files[0];
     const bannerFile = editBanner.files[0];
+
     try {
       let avatarUrl = profileAvatar.src;
       let bannerUrl = profileBanner.style.backgroundImage ? profileBanner.style.backgroundImage.slice(5, -2) : "";
+
       if (avatarFile) {
         avatarUrl = await uploadImage(avatarFile);
       }
       if (bannerFile) {
         bannerUrl = await uploadImage(bannerFile);
       }
+
       const userRef = ref(db, `users/${currentUser.uid}`);
       await set(userRef, {
         nickname,
         status,
         bio,
         avatar: avatarUrl,
-        banner: bannerUrl
+        banner: bannerUrl,
+        email: currentUser.email,
+        reputation: (await get(userRef)).val()?.reputation || 0,
+        createdAt: (await get(userRef)).val()?.createdAt || Date.now()
       });
+
       alert("Профиль успешно обновлен!");
       loadUserProfile(currentUser.uid);
       editProfileSection.classList.add("hidden");
@@ -830,6 +925,7 @@
       alert('Ошибка обновления профиля: ' + error.message);
     }
   };
+
   async function uploadImage(file) {
     const storageReference = storageRef(storage, `images/${file.name}`);
     try {
@@ -840,6 +936,7 @@
       throw error;
     }
   }
+
   btnSendComment.onclick = async () => {
     if (!currentUser) {
       alert("Войдите, чтобы комментировать.");
@@ -864,6 +961,7 @@
       console.error('Ошибка отправки комментария:', error);
     }
   };
+
   function updateCommentSectionVisibility() {
     if (currentUser && !currentUserIsAnonymous) {
       loginToComment.classList.add("hidden");
@@ -873,6 +971,7 @@
       commentForm.classList.add("hidden");
     }
   }
+
   btnSendPm.onclick = async () => {
     if (!currentUser) {
       alert("Войдите, чтобы отправлять ЛС");
@@ -918,6 +1017,7 @@
       console.error('Ошибка отправки ЛС:', error);
     }
   };
+
   function loadPrivateMessages() {
     if (!currentUser || currentUserIsAnonymous) {
       pmList.innerHTML = "<li>Войдите с почтой, чтобы видеть личные сообщения.</li>";
@@ -940,6 +1040,7 @@
       }
     });
   }
+
   async function addReputation(userId, points) {
     const userRef = ref(db, `users/${userId}/reputation`);
     try {
@@ -950,6 +1051,7 @@
       console.error('Ошибка добавления репутации:', error);
     }
   }
+
   searchButton.onclick = async () => {
     const keyword = searchInput.value.trim();
     if (!keyword) {
@@ -965,6 +1067,7 @@
       console.error('Ошибка поиска:', error);
     }
   };
+
   async function searchTopics(keyword) {
     const topicsRef = ref(db, "topics");
     try {
@@ -978,6 +1081,7 @@
       return [];
     }
   }
+
   setThemeButton.onclick = async () => {
     const theme = themeSelect.value;
     try {
@@ -987,6 +1091,7 @@
       console.error('Ошибка установки темы:', error);
     }
   };
+
   async function setUserTheme(userId, theme) {
     const userRef = ref(db, `users/${userId}/theme`);
     try {
@@ -996,6 +1101,7 @@
       console.error('Ошибка сохранения темы:', error);
     }
   }
+
   uploadImageInput.onchange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -1006,6 +1112,7 @@
       console.error('Ошибка загрузки изображения:', error);
     }
   };
+
   async function loadTrends() {
     const topicsRef = ref(db, "topics");
     try {
@@ -1023,74 +1130,72 @@
     }
   }
 
-  // Функция для подачи жалобы на пользователя
-  async function reportUser(userId, reporterId) {
-    const reportRef = push(ref(db, "reports"));
-    try {
-      await set(reportRef, {
-        userId: userId,
-        reporterId: reporterId,
-        timestamp: Date.now()
-      });
-
-      // После подачи жалобы, проверяем количество жалоб на пользователя
-      await checkAndBanUser(userId);
-      alert("Жалоба отправлена");
-    } catch (error) {
-      console.error('Ошибка подачи жалобы:', error);
-    }
-  }
-
-  // Функция проверки количества жалоб и блокировки пользователя
-  async function checkAndBanUser(userId) {
-    const reportsRef = ref(db, "reports");
-    try {
-      const snapshot = await get(reportsRef);
-      const reports = snapshot.val() || {};
-
-      // Фильтруем жалобы по userId
-      const userReports = Object.values(reports).filter(report => report.userId === userId);
-
-      if (userReports.length >= 3) {
-        await banUser(userId, userReports.length);
-      }
-    } catch (error) {
-      console.error('Ошибка проверки жалоб:', error);
-    }
-  }
-
-  // Функция блокировки пользователя
-  async function banUser(userId, reportCount) {
-    let banDuration;
-    if (reportCount === 3) {
-      banDuration = 5 * 60 * 60 * 1000; // 5 часов в миллисекундах
-    } else if (reportCount === 4) {
-      banDuration = 7 * 24 * 60 * 60 * 1000; // 7 дней
-    } else if (reportCount === 5) {
-      banDuration = 10 * 24 * 60 * 60 * 1000; // 10 дней
-    } else if (reportCount >= 6) {
-      banDuration = Infinity; // Перманентная блокировка
-    }
-
-    const banEndTime = banDuration === Infinity ? Infinity : Date.now() + banDuration;
-
-    const banRef = ref(db, `bans/${userId}`);
-    await set(banRef, {
-      bannedUntil: banEndTime,
-      reason: `Получено ${reportCount} жалоб`
-    });
-
-    alert(`Пользователь забанен до ${banEndTime === Infinity ? 'бесконечности' : new Date(banEndTime).toLocaleString()}`);
-  }
-
+  // Система жалоб
   btnReportUser.onclick = () => {
-    if (!currentUser) {
-      alert("Войдите, чтобы подать жалобу.");
+    reportForm.classList.toggle("hidden");
+  };
+
+  btnSendReport.onclick = async () => {
+    if (!currentUser || currentUserIsAnonymous) {
+      alert("Войдите через Google, чтобы отправлять жалобы.");
       return;
     }
-    const userId = profileId.textContent;
-    reportUser(userId, currentUser.uid);
+    if (!currentProfileUserId) {
+      alert("Пользователь не выбран.");
+      return;
+    }
+    if (currentProfileUserId === currentUser.uid) {
+      alert("Нельзя пожаловаться на самого себя.");
+      return;
+    }
+    const reason = reportText.value.trim();
+    if (!reason) {
+      alert("Введите причину жалобы.");
+      return;
+    }
+    try {
+      const reportRef = push(ref(db, `reports/${currentProfileUserId}`));
+      await set(reportRef, {
+        from: currentUser.uid,
+        reason,
+        createdAt: Date.now()
+      });
+      alert("Жалоба отправлена.");
+      reportText.value = "";
+      reportForm.classList.add("hidden");
+      await handleReports(currentProfileUserId);
+    } catch (error) {
+      console.error('Ошибка отправки жалобы:', error);
+      alert('Ошибка отправки жалобы: ' + error.message);
+    }
   };
+
+  async function handleReports(userId) {
+    const reportsRef = ref(db, `reports/${userId}`);
+    const snapshot = await get(reportsRef);
+    const reports = snapshot.val() || {};
+    const reportCount = Object.keys(reports).length;
+    const userRef = ref(db, `users/${userId}`);
+    let banUntil = null;
+
+    if (reportCount >= 12) {
+      banUntil = -1; // Перманентный бан
+    } else if (reportCount >= 9) {
+      banUntil = Date.now() + 10 * 24 * 60 * 60 * 1000; // 10 дней
+    } else if (reportCount >= 6) {
+      banUntil = Date.now() + 7 * 24 * 60 * 60 * 1000; // 7 дней
+    } else if (reportCount >= 3) {
+      banUntil = Date.now() + 5 * 60 * 60 * 1000; // 5 часов
+    }
+
+    if (banUntil) {
+      await update(userRef, { banUntil });
+      if (userId === currentUser?.uid) {
+        userInfo.textContent = `Пользователь: ${currentUser.email} (Забанен до ${banUntil === -1 ? "перманентно" : new Date(banUntil).toLocaleString()})`;
+        topicCreate.style.display = "none";
+      }
+    }
+  }
 </script>
 </body>
 </html>
