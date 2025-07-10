@@ -12,7 +12,6 @@
       --button-bg-color: #7f6cff;
       --button-text-color: white;
     }
-
     .dark-theme {
       --background-color: #222;
       --text-color: #fff;
@@ -20,7 +19,6 @@
       --button-bg-color: #bb86fc;
       --button-text-color: #000;
     }
-
     body {
       background: var(--background-color);
       color: var(--text-color);
@@ -30,14 +28,12 @@
       padding: 0 15px;
       font-size: 16px;
     }
-
     h1, h2, h3 {
       font-weight: 600;
       border-bottom: 2px solid var(--border-color);
       padding-bottom: 8px;
       margin-bottom: 20px;
     }
-
     button {
       background: var(--button-bg-color);
       color: var(--button-text-color);
@@ -49,12 +45,10 @@
       border-radius: 5px;
       transition: background-color 0.3s ease, color 0.3s ease;
     }
-
     button:hover {
       background: var(--border-color);
       color: var(--button-text-color);
     }
-
     input, textarea, select {
       border: 2px solid var(--border-color);
       background: #f8f6ff;
@@ -68,18 +62,15 @@
       border-radius: 6px;
       transition: border-color 0.3s ease;
     }
-
     input:focus, textarea:focus, select:focus {
       border-color: var(--border-color);
       outline: none;
       background: #f0eaff;
     }
-
     ul {
       list-style: none;
       padding: 0;
     }
-
     li {
       border-bottom: 1.5px solid var(--border-color);
       padding: 10px 8px;
@@ -87,11 +78,9 @@
       list-style: none;
       transition: background-color 0.2s ease;
     }
-
     li:hover {
       background-color: #f0eaff;
     }
-
     .comment {
       border-top: 1.5px solid var(--border-color);
       padding: 10px 8px;
@@ -99,11 +88,9 @@
       border-radius: 6px;
       background: #faf8ff;
     }
-
     .hidden {
       display: none;
     }
-
     #reactions-container button {
       border: 2px solid var(--border-color);
       background: #f8f6ff;
@@ -114,41 +101,34 @@
       font-size: 18px;
       transition: background-color 0.3s ease, color 0.3s ease;
     }
-
     #reactions-container button.selected {
       background: var(--button-bg-color);
       color: white;
       border-color: var(--border-color);
     }
-
     #private-message-section {
       margin-top: 40px;
       border-top: 2px solid var(--border-color);
       padding-top: 20px;
     }
-
     #user-info {
       margin-bottom: 15px;
       font-weight: 600;
     }
-
     #btn-back {
       margin-bottom: 20px;
       background: #c7bfff;
       color: var(--text-color);
       border-color: #c7bfff;
     }
-
     #btn-back:hover {
       background: var(--border-color);
       color: white;
     }
-
     .comments, #private-message-section {
       max-height: 400px;
       overflow-y: auto;
     }
-
     .profile {
       margin-top: 20px;
       padding: 15px;
@@ -156,25 +136,58 @@
       border-radius: 6px;
       background: #faf8ff;
     }
-
     .profile img {
       max-width: 100px;
       max-height: 100px;
       border-radius: 50%;
     }
-
     #search-section {
       margin-bottom: 20px;
     }
-
     #theme-section {
       margin-top: 20px;
+    }
+    .tag {
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 14px;
+      margin-right: 5px;
+      color: white;
+    }
+    .tag-AI { background-color: #ffcccb; }
+    .tag-Python { background-color: #add8e6; }
+    .tag-IRL { background-color: #90ee90; }
+    .tag-shitpost { background-color: #ffa500; }
+    .profile-banner {
+      background-size: cover;
+      background-position: center;
+      height: 150px;
+      margin-bottom: 15px;
+    }
+    .profile-emoji {
+      font-size: 20px;
+    }
+    .badges img {
+      width: 30px;
+      height: 30px;
+      margin-right: 5px;
+    }
+    .trends {
+      margin-top: 20px;
+    }
+    .header-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
   </style>
 </head>
 <body>
 <header>
-  <h1>algoChan Мини-Форум</h1>
+  <div class="header-container">
+    <h1>algoChan Мини-Форум</h1>
+    <button id="btn-profile" class="hidden">Профиль</button>
+  </div>
   <div id="user-info"></div>
 </header>
 <!-- Авторизация -->
@@ -204,14 +217,28 @@
 <!-- Профиль пользователя -->
 <div id="profile-section" class="hidden">
   <button id="btn-back-to-forum">← Назад к форуму</button>
+  <button id="btn-exit-profile">Выйти из профиля</button>
   <div class="profile">
-    <h2 id="profile-nickname"></h2>
+    <div class="profile-banner" id="profile-banner"></div>
     <img id="profile-avatar" src="" alt="Аватар" />
+    <h2 id="profile-nickname"></h2>
+    <p class="profile-status" id="profile-status"></p>
     <p><b>ID:</b> <span id="profile-id"></span></p>
     <p><b>Репутация:</b> <span id="profile-reputation">0</span></p>
-    <p><b>Биография:</b> <span id="profile-bio"></span></p>
+    <p><b>О себе:</b> <span id="profile-bio"></span></p>
     <h3>Награды</h3>
-    <ul id="profile-awards"></ul>
+    <div class="badges" id="profile-awards"></div>
+    <div id="edit-profile-section" class="hidden">
+      <h3>Редактировать профиль</h3>
+      <input type="text" id="edit-nickname" placeholder="Никнейм" />
+      <input type="text" id="edit-status" placeholder="Статус" />
+      <textarea id="edit-bio" placeholder="О себе"></textarea>
+      <input type="file" id="edit-avatar" accept="image/*" />
+      <input type="file" id="edit-banner" accept="image/*" />
+      <button id="btn-save-profile">Сохранить</button>
+    </div>
+    <button id="btn-edit-profile">Редактировать профиль</button>
+    <button id="btn-report-user">Пожаловаться</button>
   </div>
 </div>
 <!-- Список тем и создание темы -->
@@ -231,6 +258,10 @@
     <textarea id="topic-content" placeholder="Описание темы"></textarea>
     <input type="file" id="upload-image" accept="image/*" />
     <button id="btn-create-topic">Опубликовать</button>
+  </div>
+  <div class="trends">
+    <h3>🔥 Сейчас обсуждают</h3>
+    <ul id="trends-list"></ul>
   </div>
 </div>
 <!-- Просмотр темы -->
@@ -294,8 +325,6 @@
   import {
     getStorage, ref as storageRef, uploadBytes, getDownloadURL
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
-
-  // Firebase config
   const firebaseConfig = {
     apiKey: "AIzaSyBjWwCTsgWogsKq1s6Xwo7GGf4dycw-Hxo",
     authDomain: "algodata-26fe6.firebaseapp.com",
@@ -306,14 +335,10 @@
     appId: "1:727358128981:web:8eac1885ec167b1686e5dc",
     measurementId: "G-EXY8WDLX7N"
   };
-
-  // Initialize Firebase
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getDatabase(app);
   const storage = getStorage(app);
-
-  // Elements
   const emailInput = document.getElementById('email');
   const passwordInput = document.getElementById('password');
   const btnRegister = document.getElementById('btn-register');
@@ -321,6 +346,7 @@
   const btnGoogle = document.getElementById('btn-google');
   const btnAnon = document.getElementById('btn-anon');
   const btnLogout = document.getElementById('btn-logout');
+  const btnProfile = document.getElementById('btn-profile');
   const userInfo = document.getElementById('user-info');
   const authSection = document.getElementById('auth-section');
   const forumSection = document.getElementById('forum-section');
@@ -359,7 +385,10 @@
   const profileBio = document.getElementById('profile-bio');
   const profileAwards = document.getElementById('profile-awards');
   const profileReputation = document.getElementById('profile-reputation');
+  const profileStatus = document.getElementById('profile-status');
+  const profileBanner = document.getElementById('profile-banner');
   const btnBackToForum = document.getElementById('btn-back-to-forum');
+  const btnExitProfile = document.getElementById('btn-exit-profile');
   const searchInput = document.getElementById('search-input');
   const searchButton = document.getElementById('search-button');
   const themeSelect = document.getElementById('theme-select');
@@ -367,12 +396,19 @@
   const uploadImageInput = document.getElementById('upload-image');
   const searchSection = document.getElementById('search-section');
   const themeSection = document.getElementById('theme-section');
-
+  const trendsList = document.getElementById('trends-list');
+  const editProfileSection = document.getElementById('edit-profile-section');
+  const editNickname = document.getElementById('edit-nickname');
+  const editStatus = document.getElementById('edit-status');
+  const editBio = document.getElementById('edit-bio');
+  const editAvatar = document.getElementById('edit-avatar');
+  const editBanner = document.getElementById('edit-banner');
+  const btnEditProfile = document.getElementById('btn-edit-profile');
+  const btnSaveProfile = document.getElementById('btn-save-profile');
+  const btnReportUser = document.getElementById('btn-report-user');
   let currentUser = null;
   let currentTopicId = null;
   let currentUserIsAnonymous = true;
-
-  // ============ AUTH ===============
   btnRegister.onclick = async () => {
     const email = emailInput.value.trim();
     const pass = passwordInput.value;
@@ -388,7 +424,6 @@
       alert('Ошибка регистрации: ' + error.message);
     }
   };
-
   btnLogin.onclick = async () => {
     const email = emailInput.value.trim();
     const pass = passwordInput.value;
@@ -403,7 +438,6 @@
       alert('Ошибка входа: ' + error.message);
     }
   };
-
   btnGoogle.onclick = async () => {
     try {
       const provider = new GoogleAuthProvider();
@@ -413,7 +447,6 @@
       alert('Ошибка входа через Google: ' + error.message);
     }
   };
-
   btnAnon.onclick = async () => {
     try {
       await signInAnonymously(auth);
@@ -422,7 +455,6 @@
       alert('Ошибка анонимного входа: ' + error.message);
     }
   };
-
   btnLogout.onclick = async () => {
     try {
       await signOut(auth);
@@ -431,8 +463,17 @@
       alert('Ошибка выхода: ' + error.message);
     }
   };
-
-  // Отобразить пользователя и переключить интерфейс
+  btnProfile.onclick = () => {
+    if (currentUser) {
+      viewUserProfile(currentUser.uid);
+    } else {
+      alert("Войдите, чтобы просмотреть профиль.");
+    }
+  };
+  btnExitProfile.onclick = () => {
+    profileSection.classList.add("hidden");
+    forumSection.classList.remove("hidden");
+  };
   function showUser(user) {
     if (!user) {
       userInfo.textContent = "Вы не вошли в систему";
@@ -442,6 +483,7 @@
       pmSection.classList.add("hidden");
       profileSection.classList.add("hidden");
       btnLogout.classList.add("hidden");
+      btnProfile.classList.add("hidden");
       topicCreate.style.display = "none";
       loginToComment.classList.add("hidden");
       commentForm.classList.add("hidden");
@@ -455,25 +497,23 @@
     authSection.classList.add("hidden");
     forumSection.classList.remove("hidden");
     btnLogout.classList.remove("hidden");
+    btnProfile.classList.remove("hidden");
     topicCreate.style.display = "block";
     pmSection.classList.remove("hidden");
     searchSection.classList.remove("hidden");
     themeSection.classList.remove("hidden");
-
     if (!user.isAnonymous) {
       loadUserProfile(user.uid);
     }
   }
-
   onAuthStateChanged(auth, user => {
     showUser(user);
     if (user) {
       loadTopics();
       loadPrivateMessages();
+      loadTrends();
     }
   });
-
-  // Загрузка профиля пользователя
   async function loadUserProfile(userId) {
     const userRef = ref(db, "users/" + userId);
     try {
@@ -481,12 +521,14 @@
       if (snapshot.exists()) {
         const userData = snapshot.val();
         if (userData.avatar) profileAvatar.src = userData.avatar;
-        if (userData.nickname) profileNickname.textContent = userData.nickname;
+        if (userData.nickname) profileNickname.textContent = userData.nickname + (userData.emoji || "");
         if (userData.bio) profileBio.textContent = userData.bio;
         if (userData.reputation) profileReputation.textContent = userData.reputation;
+        if (userData.status) profileStatus.textContent = userData.status;
+        if (userData.banner) profileBanner.style.backgroundImage = `url(${userData.banner})`;
         profileId.textContent = userId;
         if (userData.awards) {
-          profileAwards.innerHTML = userData.awards.map(award => `<li>${award}</li>`).join('');
+          profileAwards.innerHTML = userData.awards.map(award => `<img src="${award}" alt="Badge" title="Badge">`).join('');
         }
         if (userData.theme) applyTheme(userData.theme);
       }
@@ -494,8 +536,6 @@
       console.error('Ошибка загрузки профиля:', error);
     }
   }
-
-  // Применение темы
   function applyTheme(theme) {
     if (theme === 'dark') {
       document.body.classList.add('dark-theme');
@@ -503,9 +543,6 @@
       document.body.classList.remove('dark-theme');
     }
   }
-
-  // =========== TOPICS ==================
-  // Загрузка списка тем
   function loadTopics() {
     const topicsRef = ref(db, "topics");
     onValue(topicsRef, (snapshot) => {
@@ -513,14 +550,12 @@
       topicsList.innerHTML = "";
       for (const [id, topic] of Object.entries(data)) {
         const li = document.createElement('li');
-        li.textContent = topic.title + " [" + topic.category + "]";
+        li.innerHTML = `${topic.title} [${topic.category}] ${topic.tags ? topic.tags.map(tag => `<span class="tag tag-${tag}">#${tag}</span>`).join(" ") : ""}`;
         li.dataset.id = id;
         topicsList.appendChild(li);
       }
     });
   }
-
-  // Создание темы
   btnCreateTopic.onclick = async () => {
     if (!currentUser) {
       alert("Войдите, чтобы создавать темы.");
@@ -535,34 +570,48 @@
       return;
     }
     const tags = tagsRaw.split(/\s+/).filter(t => t.startsWith("#")).map(t => t.substring(1));
-    const newTopicRef = push(ref(db, "topics"));
+
+    // Получаем текущую дату в формате YYYY-MM-DD
+    const todayDate = new Date().toISOString().split('T')[0];
+
+    const userTopicRef = ref(db, `users/${currentUser.uid}/topicCount/${todayDate}`);
+
     try {
-      await set(newTopicRef, {
-        title, content, category, tags,
-        author: currentUser.uid,
-        createdAt: Date.now(),
-        likes: 0,
-        dislikes: 0,
-        reactions: {},
-      });
-      await addReputation(currentUser.uid, 10);
-      topicTitle.value = "";
-      topicContent.value = "";
-      topicTags.value = "";
+        // Получаем текущее количество тем, созданных сегодня
+        const snapshot = await get(userTopicRef);
+        const currentCount = snapshot.exists() ? snapshot.val().count : 0;
+
+        if (currentCount >= 3) {
+            alert("Вы достигли лимита в 3 темы за день.");
+            return;
+        }
+
+        // Увеличиваем счетчик тем на сегодня
+        await set(userTopicRef, { count: currentCount + 1 });
+
+        const newTopicRef = push(ref(db, "topics"));
+        await set(newTopicRef, {
+            title, content, category, tags,
+            author: currentUser.uid,
+            createdAt: Date.now(),
+            likes: 0,
+            dislikes: 0,
+            reactions: {},
+        });
+        await addReputation(currentUser.uid, 10);
+        topicTitle.value = "";
+        topicContent.value = "";
+        topicTags.value = "";
     } catch (error) {
-      console.error('Ошибка создания темы:', error);
-      alert('Ошибка создания темы: ' + error.message);
+        console.error('Ошибка создания темы:', error);
+        alert('Ошибка создания темы: ' + error.message);
     }
   };
-
-  // Открыть тему
   topicsList.onclick = (e) => {
     if (e.target.tagName !== "LI") return;
     const topicId = e.target.dataset.id;
     openTopic(topicId);
   };
-
-  // Загрузить и показать тему
   async function openTopic(topicId) {
     const topicRef = ref(db, "topics/" + topicId);
     try {
@@ -576,7 +625,7 @@
       viewTitle.textContent = topic.title;
       viewContent.textContent = topic.content;
       viewCategory.textContent = topic.category;
-      viewTags.textContent = topic.tags ? topic.tags.map(t => "#" + t).join(" ") : "";
+      viewTags.innerHTML = topic.tags ? topic.tags.map(tag => `<span class="tag tag-${tag}">#${tag}</span>`).join(" ") : "";
       likeCountSpan.textContent = topic.likes || 0;
       dislikeCountSpan.textContent = topic.dislikes || 0;
       forumSection.classList.add("hidden");
@@ -590,8 +639,6 @@
       console.error('Ошибка открытия темы:', error);
     }
   }
-
-  // Назад к списку тем
   btnBack.onclick = () => {
     currentTopicId = null;
     topicView.classList.add("hidden");
@@ -599,8 +646,6 @@
     pmSection.classList.remove("hidden");
     commentsList.innerHTML = "";
   };
-
-  // Лайки и дизлайки
   btnLike.onclick = () => {
     if (!currentUser) {
       alert("Войдите, чтобы голосовать");
@@ -608,7 +653,6 @@
     }
     vote(currentTopicId, currentUser.uid, true);
   };
-
   btnDislike.onclick = () => {
     if (!currentUser) {
       alert("Войдите, чтобы голосовать");
@@ -616,7 +660,6 @@
     }
     vote(currentTopicId, currentUser.uid, false);
   };
-
   async function vote(topicId, userId, isLike) {
     const topicRef = ref(db, "topics/" + topicId);
     const userVoteRef = ref(db, `topicVotes/${topicId}/${userId}`);
@@ -651,8 +694,6 @@
       console.error('Ошибка голосования:', error);
     }
   }
-
-  // Обновить кнопку лайков/дизлайков (подсветка)
   async function updateVoteButtons(likes, dislikes) {
     if (!currentUser) {
       btnLike.classList.remove("selected");
@@ -669,8 +710,6 @@
       console.error('Ошибка обновления кнопок голосования:', error);
     }
   }
-
-  // Реакции
   reactionsContainer.onclick = async (e) => {
     if (e.target.tagName !== "BUTTON") return;
     if (!currentUser) {
@@ -695,8 +734,6 @@
       console.error('Ошибка установки реакции:', error);
     }
   };
-
-  // Обновить UI реакций по данным из Firebase
   async function updateReactionsUI(reactions) {
     const userReaction = currentUser ? reactions[currentUser.uid] : null;
     const buttons = reactionsContainer.querySelectorAll("button");
@@ -704,8 +741,6 @@
       btn.classList.toggle("selected", btn.dataset.reaction === userReaction);
     });
   }
-
-  // =========== COMMENTS =================
   function loadComments(topicId) {
     const commentsRef = ref(db, "comments/" + topicId);
     off(commentsRef);
@@ -728,8 +763,6 @@
       });
     });
   }
-
-  // Просмотр профиля пользователя
   async function viewUserProfile(userId) {
     const userRef = ref(db, "users/" + userId);
     try {
@@ -740,11 +773,13 @@
         profileId.textContent = userId;
         profileBio.textContent = userData.bio || "Нет биографии";
         profileReputation.textContent = userData.reputation || "0";
+        profileStatus.textContent = userData.status || "Нет статуса";
         profileAvatar.src = userData.avatar || "";
+        if (userData.banner) profileBanner.style.backgroundImage = `url(${userData.banner})`;
         if (userData.awards) {
-          profileAwards.innerHTML = userData.awards.map(award => `<li>${award}</li>`).join('');
+          profileAwards.innerHTML = userData.awards.map(award => `<img src="${award}" alt="Badge" title="Badge">`).join('');
         } else {
-          profileAwards.innerHTML = "<li>Нет наград</li>";
+          profileAwards.innerHTML = "<p>Нет наград</p>";
         }
         forumSection.classList.add("hidden");
         topicView.classList.add("hidden");
@@ -757,14 +792,54 @@
       console.error('Ошибка просмотра профиля:', error);
     }
   }
-
-  // Назад к форуму из профиля
   btnBackToForum.onclick = () => {
     profileSection.classList.add("hidden");
     forumSection.classList.remove("hidden");
   };
-
-  // Отправка комментария
+  btnEditProfile.onclick = () => {
+    editProfileSection.classList.toggle("hidden");
+  };
+  btnSaveProfile.onclick = async () => {
+    const nickname = editNickname.value.trim();
+    const status = editStatus.value.trim();
+    const bio = editBio.value.trim();
+    const avatarFile = editAvatar.files[0];
+    const bannerFile = editBanner.files[0];
+    try {
+      let avatarUrl = profileAvatar.src;
+      let bannerUrl = profileBanner.style.backgroundImage ? profileBanner.style.backgroundImage.slice(5, -2) : "";
+      if (avatarFile) {
+        avatarUrl = await uploadImage(avatarFile);
+      }
+      if (bannerFile) {
+        bannerUrl = await uploadImage(bannerFile);
+      }
+      const userRef = ref(db, `users/${currentUser.uid}`);
+      await set(userRef, {
+        nickname,
+        status,
+        bio,
+        avatar: avatarUrl,
+        banner: bannerUrl
+      });
+      alert("Профиль успешно обновлен!");
+      loadUserProfile(currentUser.uid);
+      editProfileSection.classList.add("hidden");
+    } catch (error) {
+      console.error('Ошибка обновления профиля:', error);
+      alert('Ошибка обновления профиля: ' + error.message);
+    }
+  };
+  async function uploadImage(file) {
+    const storageReference = storageRef(storage, `images/${file.name}`);
+    try {
+      await uploadBytes(storageReference, file);
+      return await getDownloadURL(storageReference);
+    } catch (error) {
+      console.error('Ошибка загрузки файла:', error);
+      throw error;
+    }
+  }
   btnSendComment.onclick = async () => {
     if (!currentUser) {
       alert("Войдите, чтобы комментировать.");
@@ -789,8 +864,6 @@
       console.error('Ошибка отправки комментария:', error);
     }
   };
-
-  // Показать или скрыть форму комментирования
   function updateCommentSectionVisibility() {
     if (currentUser && !currentUserIsAnonymous) {
       loginToComment.classList.add("hidden");
@@ -800,8 +873,6 @@
       commentForm.classList.add("hidden");
     }
   }
-
-  // =========== PRIVATE MESSAGES ================
   btnSendPm.onclick = async () => {
     if (!currentUser) {
       alert("Войдите, чтобы отправлять ЛС");
@@ -847,8 +918,6 @@
       console.error('Ошибка отправки ЛС:', error);
     }
   };
-
-  // Загрузка входящих личных сообщений для текущего пользователя
   function loadPrivateMessages() {
     if (!currentUser || currentUserIsAnonymous) {
       pmList.innerHTML = "<li>Войдите с почтой, чтобы видеть личные сообщения.</li>";
@@ -871,8 +940,6 @@
       }
     });
   }
-
-  // =========== REPUTATION SYSTEM ================
   async function addReputation(userId, points) {
     const userRef = ref(db, `users/${userId}/reputation`);
     try {
@@ -883,8 +950,6 @@
       console.error('Ошибка добавления репутации:', error);
     }
   }
-
-  // =========== SEARCH ================
   searchButton.onclick = async () => {
     const keyword = searchInput.value.trim();
     if (!keyword) {
@@ -894,13 +959,12 @@
     try {
       const results = await searchTopics(keyword);
       topicsList.innerHTML = results.map(topic =>
-        `<li data-id="${topic.id}">${topic.title} [${topic.category}]</li>`
+        `<li data-id="${topic.id}">${topic.title} [${topic.category}] ${topic.tags ? topic.tags.map(tag => `<span class="tag tag-${tag}">#${tag}</span>`).join(" ") : ""}</li>`
       ).join('');
     } catch (error) {
       console.error('Ошибка поиска:', error);
     }
   };
-
   async function searchTopics(keyword) {
     const topicsRef = ref(db, "topics");
     try {
@@ -914,8 +978,6 @@
       return [];
     }
   }
-
-  // =========== THEMES ================
   setThemeButton.onclick = async () => {
     const theme = themeSelect.value;
     try {
@@ -925,7 +987,6 @@
       console.error('Ошибка установки темы:', error);
     }
   };
-
   async function setUserTheme(userId, theme) {
     const userRef = ref(db, `users/${userId}/theme`);
     try {
@@ -935,8 +996,6 @@
       console.error('Ошибка сохранения темы:', error);
     }
   }
-
-  // =========== IMAGE UPLOAD ================
   uploadImageInput.onchange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -947,17 +1006,91 @@
       console.error('Ошибка загрузки изображения:', error);
     }
   };
-
-  async function uploadImage(file) {
-    const storageRef = storageRef(storage, `images/${file.name}`);
+  async function loadTrends() {
+    const topicsRef = ref(db, "topics");
     try {
-      await uploadBytes(storageRef, file);
-      return await getDownloadURL(storageRef);
+      const snapshot = await get(topicsRef);
+      const topics = snapshot.val() || {};
+      const trends = Object.entries(topics)
+        .sort((a, b) => (b[1].likes || 0) - (a[1].likes || 0))
+        .slice(0, 5)
+        .map(([id, topic]) => ({ id, ...topic }));
+      trendsList.innerHTML = trends.map(trend =>
+        `<li data-id="${trend.id}">${trend.title} [${trend.category}] ${trend.tags ? trend.tags.map(tag => `<span class="tag tag-${tag}">#${tag}</span>`).join(" ") : ""}</li>`
+      ).join('');
     } catch (error) {
-      console.error('Ошибка загрузки файла:', error);
-      throw error;
+      console.error('Ошибка загрузки трендов:', error);
     }
   }
+
+  // Функция для подачи жалобы на пользователя
+  async function reportUser(userId, reporterId) {
+    const reportRef = push(ref(db, "reports"));
+    try {
+      await set(reportRef, {
+        userId: userId,
+        reporterId: reporterId,
+        timestamp: Date.now()
+      });
+
+      // После подачи жалобы, проверяем количество жалоб на пользователя
+      await checkAndBanUser(userId);
+      alert("Жалоба отправлена");
+    } catch (error) {
+      console.error('Ошибка подачи жалобы:', error);
+    }
+  }
+
+  // Функция проверки количества жалоб и блокировки пользователя
+  async function checkAndBanUser(userId) {
+    const reportsRef = ref(db, "reports");
+    try {
+      const snapshot = await get(reportsRef);
+      const reports = snapshot.val() || {};
+
+      // Фильтруем жалобы по userId
+      const userReports = Object.values(reports).filter(report => report.userId === userId);
+
+      if (userReports.length >= 3) {
+        await banUser(userId, userReports.length);
+      }
+    } catch (error) {
+      console.error('Ошибка проверки жалоб:', error);
+    }
+  }
+
+  // Функция блокировки пользователя
+  async function banUser(userId, reportCount) {
+    let banDuration;
+    if (reportCount === 3) {
+      banDuration = 5 * 60 * 60 * 1000; // 5 часов в миллисекундах
+    } else if (reportCount === 4) {
+      banDuration = 7 * 24 * 60 * 60 * 1000; // 7 дней
+    } else if (reportCount === 5) {
+      banDuration = 10 * 24 * 60 * 60 * 1000; // 10 дней
+    } else if (reportCount >= 6) {
+      banDuration = Infinity; // Перманентная блокировка
+    }
+
+    const banEndTime = banDuration === Infinity ? Infinity : Date.now() + banDuration;
+
+    const banRef = ref(db, `bans/${userId}`);
+    await set(banRef, {
+      bannedUntil: banEndTime,
+      reason: `Получено ${reportCount} жалоб`
+    });
+
+    alert(`Пользователь забанен до ${banEndTime === Infinity ? 'бесконечности' : new Date(banEndTime).toLocaleString()}`);
+  }
+
+  btnReportUser.onclick = () => {
+    if (!currentUser) {
+      alert("Войдите, чтобы подать жалобу.");
+      return;
+    }
+    const userId = profileId.textContent;
+    reportUser(userId, currentUser.uid);
+  };
 </script>
 </body>
 </html>
